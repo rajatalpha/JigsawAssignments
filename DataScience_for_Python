@@ -12,3 +12,6 @@ for i in y:
 #print(y)
 df1=pd.DataFrame(y)
 print(df1)
+df1=pd.DataFrame(y)
+df1.drop(['alert','cdi','detail','felt','id','ids','mmi','net','sources','updated','url'],axis=1)
+df1
