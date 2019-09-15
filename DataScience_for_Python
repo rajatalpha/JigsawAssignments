@@ -1,0 +1,14 @@
+import urllib.request, json
+import pandas as pd
+url = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2016-10-01&endtime=2016-10-02"
+response = urllib.request.urlopen(url)
+data = json.loads(response.read())
+y=data['features']
+o=[]
+for d in y:
+    d.update(d.pop('geometry', {}))
+for i in y:
+    i.update(i.pop('properties', {}))
+#print(y)
+df1=pd.DataFrame(y)
+print(df1)
