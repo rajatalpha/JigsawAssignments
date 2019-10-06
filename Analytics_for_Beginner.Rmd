@@ -1,0 +1,172 @@
+---
+title: "Analytics For Beginners"
+author: "Rajat Shrivastav"
+date: "October 3, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library('readxl')
+library('stringr')  #To remove the asterisk
+```
+
+
+#lets first get the Data in
+```{r}
+rahul<-read_excel('C:\\Users\\1500202\\Documents\\NEW_R_Scripts\\Cricket_Data-2.xlsx',sheet="Rahul")
+saurav<-read_excel('C:\\Users\\1500202\\Documents\\NEW_R_Scripts\\Cricket_Data-2.xlsx',sheet="Saurav")
+```
+
+Lets look at the structure
+```{r}
+str(rahul)
+str(saurav)
+```
+
+Lets have the view of the data
+```{r}
+View(rahul)
+```
+
+Lets start with removing asterisk from the runs Scored column
+```{r}
+rahul$`Runs Scored`<-str_replace(rahul$`Runs Scored`,'\\*','')
+saurav$`Runs Scored`<-str_replace(saurav$`Runs Scored`,'\\*','')
+```
+
+Let's remove the versus "v " from the opposition column
+```{r}
+rahul$Opposition<-gsub("^.{0,2}", "",rahul$Opposition)
+saurav$Opposition<-gsub("^.{0,2}", "",saurav$Opposition)
+```
+
+NOw view the data
+```{r}
+View(rahul)
+View(saurav)
+```
+
+Remove the DNB and TDNB from the dataset as these are the matches where they didn't bat
+
+```{r}
+rahul<-subset(rahul,`Runs Scored`!='DNB' & `Runs Scored`!='TDNB')
+saurav<-subset(saurav,`Runs Scored`!='DNB' & `Runs Scored`!='TDNB')
+```
+
+Now from the Results remove the "tied" and "n/r" matches as they can't help in our analytics
+
+```{r}
+rahul<-subset(rahul,Result!='tied' & Result!='n/r')
+saurav<-subset(saurav, Result!='tied' & Result!='n/r')
+```
+
+Converting the result variable to '1' or '0' based on a Win or a lose
+```{r}
+rahul$Result[rahul$Result=='won']<-1
+rahul$Result[rahul$Result=='lost']<-0
+saurav$Result[saurav$Result=='won']<-1
+saurav$Result[saurav$Result=='lost']<-0
+```
+
+Converting the runs scored into numeric column 
+```{r}
+rahul$`Runs Scored`<-as.numeric(rahul$`Runs Scored`)
+saurav$`Runs Scored`<-as.numeric(saurav$`Runs Scored`)
+rahul$Result<- as.numeric(rahul$Result)
+saurav$Result<-as.numeric(saurav$Result)
+```
+
+
+
+
+Last look into the dataset before applying the model.
+```{r}
+str(rahul)
+str(saurav)
+str(rahul$`Runs Scored`)
+```
+
+
+
+Building a logistic Model
+```{r}
+smodel3<-glm(formula= Result ~ `Runs Scored`, family="binomial", data = rahul)
+summary(smodel3)
+smodel4<-glm(formula= Result ~ `Runs Scored`, family="binomial", data = saurav)
+summary(smodel4)
+```
+
+Making a matrix of calculated probablity of winning.
+```{r}
+glm.probs1 <- predict(smodel3,type = "response")
+glm.probs2 <- predict(smodel4,type = "response")
+glm.probs1[1:5]
+glm.probs2[1:5]
+length(glm.probs1)
+length(glm.probs2)
+```
+ 
+Now once we have the calculated probabities with us we will make a new column vector for Win or loss
+
+```{r}
+glm.pred1 <- ifelse(glm.probs1 > 0.5, "Win", "Loss")  #for Rahul
+glm.pred2 <- ifelse(glm.probs2 > 0.5, "Win", "Loss")  #for Saurav
+#View(glm.pred1)
+#View(glm.pred2)
+length(glm.pred1)
+length(glm.pred2)
+```
+
+Now to get how many matched did the model predicted win for Saurav Ganguly we could use glm.pred2
+```{r}
+a<-table(glm.pred1)
+b<-table(glm.pred2)
+a
+b
+```
+
+lets look at the dimensions
+```{r}
+dim(rahul)
+dim(saurav)
+```
+
+To get chitest value
+```{r}
+anova(smodel4,test='Chisq')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
